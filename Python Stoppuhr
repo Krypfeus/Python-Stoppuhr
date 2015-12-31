@@ -1,0 +1,104 @@
+zustand=[0,1]
+zustand=0
+import datetime
+import threading
+
+string="00:00:00,000000"
+
+class Stoppuhr(threading.Thread):
+    def run(self):
+        global zustand,string
+        jetzt= datetime.datetime.now()
+        st_stunden=jetzt.hour
+        st_minuten=jetzt.minute
+        st_sekunden=jetzt.second
+        st_microsekunden=jetzt.microsecond
+        while zustand==1:
+            jetzt= datetime.datetime.now()
+            neu_stunden=jetzt.hour
+            neu_minuten=jetzt.minute
+            neu_sekunden=jetzt.second
+            neu_microsekunden=jetzt.microsecond
+            microsekunden= neu_microsekunden - st_microsekunden
+            sekunden= neu_sekunden - st_sekunden
+            minuten=neu_minuten - st_minuten
+            stunden= neu_stunden - st_stunden
+            if minuten <0:
+                minuten=minuten+60
+                stunden=stunden-1
+            if sekunden <0:
+                sekunden=sekunden+60
+                minuten=minuten-1
+            if microsekunden <0:
+                microsekunden=microsekunden+100000
+                sekunden=sekunden-1
+
+            string_new=""
+            if stunden <10:
+                string_new=string_new+"0"+str(stunden)+":"
+            else:
+                string_new=string_new+str(stunden)+":"
+            if minuten <10:
+                string_new=string_new+"0"+str(minuten)+":"
+            else:
+                string_new=string_new+str(minuten)+":"
+            if sekunden <10:
+                string_new=string_new+"0"+str(sekunden)+","
+            else:
+                string_new=string_new+str(sekunden)+","
+            if microsekunden <100000:
+                string_new=string_new+"0"
+                if microsekunden <10000:
+                    string_new=string_new+"0"
+                    if microsekunden <1000:
+                        string_new=string_new+"0"
+                        if microsekunden <100:
+                            string_new=string_new+"0"
+                            if microsekunden <10:
+                                string_new=string_new+"0"
+            string_new=string_new+str(microsekunden)
+            lock=threading.Lock()
+            lock.acquire()
+            string=string_new
+            lock.release()
+            
+def reset():
+    global zustand,string
+    lZeit.config(text="00:00:00,000000")
+    lock=threading.Lock()
+    lock.acquire()
+    string="00:00:00,000000"
+    lock.release()
+    bReset.config(state="disabled")
+    zustand=0
+
+def update():
+    lock=threading.Lock()
+    lock.acquire()
+    lZeit.config(text=string)
+    lock.release()
+    f.after(100,update)
+
+def schalten():
+    global zustand
+    zustand= (zustand+1)%2
+    if zustand==1:
+        bSchalter.config(text="Stopp")
+        Stoppuhr().start()
+    else:
+        bSchalter.config(text="Start")
+        bReset.config(state="normal")
+
+from tkinter import *
+
+f = Tk()
+f.title("Stoppuhr")
+f.geometry('350x300')
+lZeit=Label(master=f,text='00:00:00,000000')
+lZeit.pack()
+bSchalter=Button(master=f,text="Start",command=schalten)
+bSchalter.pack()
+bReset=Button(master=f,text="Reset",command=reset,state="disabled")
+bReset.pack()
+update()
+f.mainloop()
