@@ -3,7 +3,7 @@ zustand=0
 import datetime
 import threading
 
-string="00:00:00,000000"
+string="00:00:00"
 
 class Stoppuhr(threading.Thread):
     def run(self):
@@ -12,14 +12,11 @@ class Stoppuhr(threading.Thread):
         st_stunden=jetzt.hour
         st_minuten=jetzt.minute
         st_sekunden=jetzt.second
-        st_microsekunden=jetzt.microsecond
         while zustand==1:
             jetzt= datetime.datetime.now()
             neu_stunden=jetzt.hour
             neu_minuten=jetzt.minute
             neu_sekunden=jetzt.second
-            neu_microsekunden=jetzt.microsecond
-            microsekunden= neu_microsekunden - st_microsekunden
             sekunden= neu_sekunden - st_sekunden
             minuten=neu_minuten - st_minuten
             stunden= neu_stunden - st_stunden
@@ -29,9 +26,6 @@ class Stoppuhr(threading.Thread):
             if sekunden <0:
                 sekunden=sekunden+60
                 minuten=minuten-1
-            if microsekunden <0:
-                microsekunden=microsekunden+100000
-                sekunden=sekunden-1
 
             string_new=""
             if stunden <10:
@@ -46,17 +40,6 @@ class Stoppuhr(threading.Thread):
                 string_new=string_new+"0"+str(sekunden)+","
             else:
                 string_new=string_new+str(sekunden)+","
-            if microsekunden <100000:
-                string_new=string_new+"0"
-                if microsekunden <10000:
-                    string_new=string_new+"0"
-                    if microsekunden <1000:
-                        string_new=string_new+"0"
-                        if microsekunden <100:
-                            string_new=string_new+"0"
-                            if microsekunden <10:
-                                string_new=string_new+"0"
-            string_new=string_new+str(microsekunden)
             lock=threading.Lock()
             lock.acquire()
             string=string_new
@@ -64,10 +47,10 @@ class Stoppuhr(threading.Thread):
             
 def reset():
     global zustand,string
-    lZeit.config(text="00:00:00,000000")
+    lZeit.config(text="00:00:00")
     lock=threading.Lock()
     lock.acquire()
-    string="00:00:00,000000"
+    string="00:00:00"
     lock.release()
     bReset.config(state="disabled")
     zustand=0
@@ -94,7 +77,7 @@ from tkinter import *
 f = Tk()
 f.title("Stoppuhr")
 f.geometry('350x300')
-lZeit=Label(master=f,text='00:00:00,000000')
+lZeit=Label(master=f,text='00:00:00')
 lZeit.pack()
 bSchalter=Button(master=f,text="Start",command=schalten)
 bSchalter.pack()
